@@ -25,7 +25,7 @@ from model import UserRankModel  # Your model
 
 
 samples = Sales.query("date > 2018/1/1")
-samples = Sales.freezed.samples.get()
+samples = Sales.freezed.samples.load()
 
 # Make process
 process = Process(
