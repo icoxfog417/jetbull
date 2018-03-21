@@ -55,8 +55,8 @@ class Resource(JetTemplate):
         return train_test_split(X, y, test_size=test_size,
                                 random_state=random_state)
 
-    def get_client(self):
-        if self.credential_path:
+    def make_client(self):
+        if self.credential_path and os.path.isfile(self.credential_path):
             return storage.Client.from_service_account_json(
                     self.credential_path)
         else:
