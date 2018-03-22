@@ -103,3 +103,4 @@ ENV/
 .DS_Store
 credential.json
 demo/example-data
+tests/data

@@ -1,4 +1,5 @@
 from sklearn.ensemble import RandomForestClassifier
 
 
-model = RandomForestClassifier(n_estimators=50, oob_score=True)
+def make_model(n_estimators):
+    return RandomForestClassifier(n_estimators=n_estimators, oob_score=True)

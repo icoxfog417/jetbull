@@ -3,26 +3,29 @@ from io import BytesIO
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from google.cloud import storage
-from jetbull.jet_template import JetTemplate
 
 
-class Datasets(JetTemplate):
+class Datasets():
 
-    def __init__(self, root, credential_path=""):
-        super().__init__(credential_path)
+    def __init__(self, root, client=None):
         self.root = root
+        self._client = None
+        if client is not None:
+            self._client = storage.Client(
+                                project=client.project,
+                                credentials=client._credentials)
 
     def resource(self, path, target=""):
-        return Resource(self.root, path, self.credential_path, target)
+        return Resource(self.root, path, target, self._client)
 
 
-class Resource(JetTemplate):
+class Resource():
 
-    def __init__(self, root, path, credential_path, target=""):
-        super().__init__(credential_path)
+    def __init__(self, root, path, target="", client=None):
         self.root = root
         self.path = path
         self._target = target
+        self._client = client
         self._cache = None
 
     @property
@@ -55,13 +58,6 @@ class Resource(JetTemplate):
         return train_test_split(X, y, test_size=test_size,
                                 random_state=random_state)
 
-    def make_client(self):
-        if self.credential_path and os.path.isfile(self.credential_path):
-            return storage.Client.from_service_account_json(
-                    self.credential_path)
-        else:
-            return storage.Client()
-
     def full_path(self, on_cloud=False):
         if on_cloud:
             base = os.path.basename(self.root)
@@ -71,21 +67,30 @@ class Resource(JetTemplate):
 
     def load(self, on_cloud=False):
         path = self.full_path(on_cloud)
-        func = self.jet(on_cloud, self.load_cloud, self.load_local)
-        return func(path)
+        if on_cloud:
+            return self.load_cloud(path)
+        else:
+            return self.load_local(path)
 
     def load_local(self, path):
+        if not os.path.isfile(path):
+            _path = self.full_path(on_cloud=True)
+            blob = self._get_blob(_path)
+            blob.download_to_filename(path)
         df = pd.read_csv(path)
         self._cache = df
         return self
 
     def load_cloud(self, path):
-        client = self.get_client()
-        drive, prefix = path.split("//")
-        bucket, file_path = prefix.split("/", 1)
-        bucket = client.get_bucket(bucket)
-        blob = bucket.get_blob(file_path)
+        blob = self._get_blob(path)
         string_bytes = blob.download_as_string()
         df = pd.read_csv(BytesIO(string_bytes))
         self._cache = df
         return self
+
+    def _get_blob(self, path):
+        drive, prefix = path.split("//")
+        bucket, file_path = prefix.split("/", 1)
+        bucket = self._client.get_bucket(bucket)
+        blob = bucket.get_blob(file_path)
+        return blob

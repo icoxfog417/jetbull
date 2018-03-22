@@ -2,10 +2,10 @@ import os
 from jetbull.datasets import Datasets
 
 
-class DemoDatasets(Datasets):
+class SampleDatasets(Datasets):
 
     def __init__(self, client=None):
-        root = os.path.join(os.path.dirname(__file__), "./example-data")
+        root = os.path.join(os.path.dirname(__file__), "../example-data")
         super().__init__(root, client)
 
     @property

@@ -5,7 +5,6 @@ from sklearn.pipeline import _fit_transform_one
 from sklearn.utils.validation import check_memory
 from sklearn.utils.metaestimators import if_delegate_has_method
 from sklearn.base import clone
-from jetbull.jet_model import JetModel
 from jetbull.threshold_estimator import ThresholdEstimator
 
 
@@ -27,8 +26,6 @@ class ModelProcess(Pipeline):
         kind = None
         for n, e in self.steps:
             if isinstance(e, (ClassifierMixin, RegressorMixin)):
-                kind = ProcKind.MODEL
-            elif isinstance(e, JetModel):
                 kind = ProcKind.MODEL
             elif isinstance(e, ThresholdEstimator):
                 kind = ProcKind.THRESHOLD

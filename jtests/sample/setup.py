@@ -9,7 +9,7 @@ if os.path.isfile("requirements.txt"):
 
 
 setup(
-    name="trainer",
+    name="sample",
     install_requires=requires,
     packages=find_packages(exclude=("demo", "notebooks", "test_*.py")),
     data_files=[("", ["requirements.txt"])]
